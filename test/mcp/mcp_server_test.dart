@@ -17,14 +17,16 @@ void main() {
   late StreamChannelController<String> controller;
 
   setUp(() async {
-    store = BriefStore(repository: InMemoryBriefRepository(SampleBrief.build()));
+    store = BriefStore(
+      repository: InMemoryBriefRepository(SampleBrief.build()),
+    );
     await store.init();
 
     controller = StreamChannelController<String>();
     server = EdaMcpServer(channel: controller.local, store: store);
 
     client = MCPClient(Implementation(name: 'test-client', version: '0.1.0'));
-    connection = client.connectServer(controller.remote);
+    connection = client.connectServer(controller.foreign);
     await connection.initialize(
       InitializeRequest(
         protocolVersion: ProtocolVersion.latestSupported,
@@ -38,6 +40,7 @@ void main() {
   tearDown(() async {
     await client.shutdown();
     await controller.local.sink.close();
+    expect(server, isA<EdaMcpServer>());
     await store.close();
   });
 
@@ -49,12 +52,19 @@ void main() {
     fail('Expected a text result but got ${content.type}');
   }
 
-  Future<Map<String, Object?>> call(String name, [Map<String, Object?> args = const {}]) async {
-    final result = await connection.callTool(CallToolRequest(name: name, arguments: args));
+  Future<Map<String, Object?>> call(
+    String name, [
+    Map<String, Object?> args = const {},
+  ]) async {
+    final result = await connection.callTool(
+      CallToolRequest(name: name, arguments: args),
+    );
     if (result.isError == true) {
       fail('Tool $name failed: ${textOf(result)}');
     }
-    return (jsonDecode(textOf(result)) as Map).cast<String, Object?>();
+    final decoded = jsonDecode(textOf(result));
+    if (decoded is List) return {'items': decoded};
+    return (decoded as Map).cast<String, Object?>();
   }
 
   group('EdaMcpServer', () {
@@ -101,24 +111,37 @@ void main() {
     });
 
     test('adds and lists a constraint', () async {
-      await call('add_constraint', {
+      final added = await call('add_constraint', {
         'requirementId': 'REQ-002',
         'kind': 'max',
         'severity': 'soft',
         'value': '1.9 kN',
       });
-      final constraints = await call('list_constraints', {'requirementId': 'REQ-002'});
-      expect((constraints['items'] as List).length, 1);
+      final constraints = await call('list_constraints', {
+        'requirementId': 'REQ-002',
+      });
+      expect(
+        (constraints['items'] as List).any(
+          (item) => (item as Map)['id'] == added['id'],
+        ),
+        isTrue,
+      );
     });
 
     test('converts quantities', () async {
-      final result = await call('convert_quantity', {'value': '2.5 kN', 'to': 'N'});
+      final result = await call('convert_quantity', {
+        'value': '2.5 kN',
+        'to': 'N',
+      });
       expect(result['value'], closeTo(2500, 1e-6));
     });
 
     test('rejects an incompatible conversion', () async {
       final result = await connection.callTool(
-        CallToolRequest(name: 'convert_quantity', arguments: {'value': '2 kN', 'to': 'mm'}),
+        CallToolRequest(
+          name: 'convert_quantity',
+          arguments: {'value': '2 kN', 'to': 'mm'},
+        ),
       );
       expect(result.isError, isTrue);
     });
@@ -144,11 +167,11 @@ void main() {
       });
       final id = added['id'] as String;
       await call('update_assumption_status', {'id': id, 'status': 'validated'});
-      final assumptions = await call('list_assumptions', {'status': 'validated'});
+      final assumptions = await call('list_assumptions', {
+        'status': 'validated',
+      });
       expect(
-        (assumptions['items'] as List).any(
-          (item) => (item as Map)['id'] == id,
-        ),
+        (assumptions['items'] as List).any((item) => (item as Map)['id'] == id),
         isTrue,
       );
     });

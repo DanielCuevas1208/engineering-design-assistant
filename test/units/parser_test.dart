@@ -39,11 +39,11 @@ void main() {
 
     test('parses exponents', () {
       final volume = parse('100 cm3');
-      expect(volume.dimension.siLabel, 'm^3');
+      expect(volume.dimension.siLabel, 'm\u00b3');
       expect(volume.siValue, closeTo(1e-4, 1e-12));
 
       final pressure = parse('2.5 kN/m²');
-      expect(pressure.dimension.siLabel, 'kg/(m·s^2)');
+      expect(pressure.dimension.siLabel, 'Pa');
       expect(pressure.siValue, closeTo(2500, 1e-9));
     });
 

@@ -59,97 +59,90 @@ class BriefPage extends StatelessWidget {
       listenable: store,
       builder: (context, _) {
         final brief = store.brief;
-        return Padding(
+        return ListView(
           padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              PageHeader(
-                title: 'Design brief',
-                subtitle: 'The typed handoff for EngineerKit tools.',
-                actions: [
-                  OutlinedButton.icon(
-                    onPressed: () => _loadSample(context),
-                    icon: const Icon(Icons.science_outlined, size: 18),
-                    label: const Text('Load sample'),
-                  ),
-                  const SizedBox(width: 8),
-                  FilledButton.icon(
-                    onPressed: () => _editProject(context),
-                    icon: const Icon(Icons.edit_outlined, size: 18),
-                    label: const Text('Edit project'),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              brief.projectName,
-                              style: Theme.of(context).textTheme.titleLarge,
-                            ),
-                            Text(
-                              'Version ${brief.projectVersion} · schema '
-                              '$designBriefSchemaId',
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
-                            if (brief.purpose.isNotEmpty) ...[
-                              const SizedBox(height: 6),
-                              Text(brief.purpose),
-                            ],
+          children: [
+            PageHeader(
+              title: 'Design brief',
+              subtitle: 'The typed handoff for EngineerKit tools.',
+              actions: [
+                OutlinedButton.icon(
+                  onPressed: () => _loadSample(context),
+                  icon: const Icon(Icons.science_outlined, size: 18),
+                  label: const Text('Load sample'),
+                ),
+                const SizedBox(width: 8),
+                FilledButton.icon(
+                  onPressed: () => _editProject(context),
+                  icon: const Icon(Icons.edit_outlined, size: 18),
+                  label: const Text('Edit project'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            brief.projectName,
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                          Text(
+                            'Version ${brief.projectVersion} · schema '
+                            '$designBriefSchemaId',
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                          if (brief.purpose.isNotEmpty) ...[
+                            const SizedBox(height: 6),
+                            Text(brief.purpose),
                           ],
-                        ),
+                        ],
                       ),
-                      const SizedBox(width: 16),
-                      FilledButton.tonalIcon(
-                        onPressed: () => _copy(context),
-                        icon: const Icon(Icons.copy_all_outlined, size: 18),
-                        label: const Text('Copy JSON'),
-                      ),
-                      const SizedBox(width: 8),
-                      FilledButton.icon(
-                        onPressed: () => _export(context),
-                        icon: const Icon(Icons.save_alt_outlined, size: 18),
-                        label: const Text('Export to file'),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Export path: ${defaultExportPath(brief)}',
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-              const SizedBox(height: 8),
-              Expanded(
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: SelectableText(
-                    store.exportJson(),
-                    style: const TextStyle(
-                      fontFamily: 'monospace',
-                      fontSize: 12,
                     ),
-                  ),
+                    const SizedBox(width: 16),
+                    FilledButton.tonalIcon(
+                      onPressed: () => _copy(context),
+                      icon: const Icon(Icons.copy_all_outlined, size: 18),
+                      label: const Text('Copy JSON'),
+                    ),
+                    const SizedBox(width: 8),
+                    FilledButton.icon(
+                      onPressed: () => _export(context),
+                      icon: const Icon(Icons.save_alt_outlined, size: 18),
+                      label: const Text('Export to file'),
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Export path: ${defaultExportPath(brief)}',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            const SizedBox(height: 8),
+            SizedBox(
+              height: 420,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: SelectableText(
+                  store.exportJson(),
+                  style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
+                ),
+              ),
+            ),
+          ],
         );
       },
     );
