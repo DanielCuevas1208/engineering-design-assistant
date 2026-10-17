@@ -102,6 +102,7 @@ class _RequirementDialogState extends State<RequirementDialog> {
                   children: [
                     Expanded(
                       child: DropdownButtonFormField<RequirementCategory>(
+                        isExpanded: true,
                         initialValue: _category,
                         decoration: const InputDecoration(
                           labelText: 'Category',
@@ -123,6 +124,7 @@ class _RequirementDialogState extends State<RequirementDialog> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: DropdownButtonFormField<Priority>(
+                        isExpanded: true,
                         initialValue: _priority,
                         decoration: const InputDecoration(
                           labelText: 'Priority',
@@ -144,6 +146,7 @@ class _RequirementDialogState extends State<RequirementDialog> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: DropdownButtonFormField<RequirementStatus>(
+                        isExpanded: true,
                         initialValue: _status,
                         decoration: const InputDecoration(
                           labelText: 'Status',

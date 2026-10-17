@@ -50,6 +50,18 @@ class ConstraintChecker {
     Requirement requirement,
     List<ValidationIssue> issues,
   ) {
+    if (requirement.owner.trim().isEmpty &&
+        requirement.status == RequirementStatus.approved) {
+      issues.add(
+        ValidationIssue(
+          severity: IssueSeverity.warning,
+          code: IssueCode.requirementNoOwner,
+          message:
+              'Requirement ${requirement.id} is approved but has no owner.',
+          entityId: requirement.id,
+        ),
+      );
+    }
     if (requirement.quantity.isEmpty) return;
     final result = engine.parse(requirement.quantity.raw);
     if (result.quantity == null) {
@@ -62,18 +74,6 @@ class ConstraintChecker {
               "'${requirement.quantity.raw}'.",
           entityId: requirement.id,
           detail: result.error,
-        ),
-      );
-    }
-    if (requirement.owner.trim().isEmpty &&
-        requirement.status == RequirementStatus.approved) {
-      issues.add(
-        ValidationIssue(
-          severity: IssueSeverity.warning,
-          code: IssueCode.requirementNoOwner,
-          message:
-              'Requirement ${requirement.id} is approved but has no owner.',
-          entityId: requirement.id,
         ),
       );
     }

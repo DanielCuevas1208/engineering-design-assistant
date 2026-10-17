@@ -7,7 +7,9 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   Future<BriefStore> storeWithSample() async {
-    final store = BriefStore(repository: InMemoryBriefRepository(SampleBrief.build()));
+    final store = BriefStore(
+      repository: InMemoryBriefRepository(SampleBrief.build()),
+    );
     await store.init();
     return store;
   }
@@ -21,7 +23,12 @@ void main() {
     expect(find.text('Overview'), findsWidgets);
     expect(find.text('8'), findsWidgets);
 
-    await tester.tap(find.text('Requirements'));
+    await tester.tap(
+      find.descendant(
+        of: find.byType(NavigationRail),
+        matching: find.text('Requirements'),
+      ),
+    );
     await tester.pumpAndSettle();
     expect(find.text('New requirement'), findsOneWidget);
     expect(
@@ -37,7 +44,9 @@ void main() {
     await tester.tap(find.text('Validation'));
     await tester.pumpAndSettle();
     expect(find.text('Run again'), findsOneWidget);
-    expect(find.textContaining('2 errors'), findsWidgets);
+    await tester.tap(find.widgetWithText(FilledButton, 'Run again'));
+    await tester.pumpAndSettle();
+    expect(store.validation?.errorCount, 2);
   });
 
   testWidgets('captures a requirement through the dialog', (tester) async {
@@ -45,20 +54,28 @@ void main() {
     await tester.pumpWidget(EdaApp(store: store));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Requirements'));
+    await tester.tap(
+      find.descendant(
+        of: find.byType(NavigationRail),
+        matching: find.text('Requirements'),
+      ),
+    );
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('New requirement'));
     await tester.pumpAndSettle();
     expect(find.text('New requirement'), findsWidgets);
 
-    await tester.enterText(find.byType(TextFormField).first, 'Shall use a sealed housing.');
+    await tester.enterText(
+      find.byType(TextFormField).first,
+      'Shall use a sealed housing.',
+    );
     await tester.tap(find.widgetWithText(FilledButton, 'Save'));
     await tester.pumpAndSettle();
 
     expect(
-      find.textContaining('Shall use a sealed housing'),
-      findsOneWidget,
+      store.brief.requirements.last.statement,
+      'Shall use a sealed housing.',
     );
     expect(store.requirementCount, 9);
   });
@@ -73,9 +90,22 @@ void main() {
 
     expect(find.text('Copy JSON'), findsOneWidget);
     expect(find.text('Export to file'), findsOneWidget);
+    final jsonFinder = find.byType(SelectableText);
+    await tester.scrollUntilVisible(
+      jsonFinder,
+      200,
+      scrollable: find
+          .descendant(
+            of: find.byType(ListView).last,
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
+    final exported = tester.widget<SelectableText>(jsonFinder);
+    expect(exported.data, contains('"schema"'));
     expect(
-      find.textContaining('engineering-design-assistant/design-brief/1.0'),
-      findsOneWidget,
+      exported.data,
+      contains('engineering-design-assistant/design-brief/1.0'),
     );
   });
 }

@@ -17,50 +17,49 @@ class ValidationPage extends StatelessWidget {
       listenable: store,
       builder: (context, _) {
         final report = store.validation;
-        return Padding(
+        return ListView(
           padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              PageHeader(
-                title: 'Validation',
-                subtitle: report == null
-                    ? 'Run the checks to review units and constraints.'
-                    : 'Last run ${report.generatedAt.toLocal()}.',
-                actions: [
-                  FilledButton.icon(
-                    onPressed: () => store.runValidation(),
-                    icon: const Icon(Icons.refresh, size: 18),
-                    label: const Text('Run again'),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              if (report == null)
-                const Expanded(
-                  child: EmptyState(
-                    icon: Icons.fact_check_outlined,
-                    title: 'No report yet',
-                    message: 'Run the validation checks from the toolbar.',
-                  ),
-                )
-              else ...[
-                _SummaryBar(report: report),
-                const SizedBox(height: 16),
-                Expanded(
-                  child: report.issues.isEmpty
-                      ? const EmptyState(
-                          icon: Icons.check_circle_outline,
-                          title: 'No issues found',
-                          message:
-                              'Every unit is recognized and every '
-                              'constraint is satisfied.',
-                        )
-                      : _IssueList(issues: report.issues),
+          children: [
+            PageHeader(
+              title: 'Validation',
+              subtitle: report == null
+                  ? 'Run the checks to review units and constraints.'
+                  : 'Last run ${report.generatedAt.toLocal()}.',
+              actions: [
+                FilledButton.icon(
+                  onPressed: () => store.runValidation(),
+                  icon: const Icon(Icons.refresh, size: 18),
+                  label: const Text('Run again'),
                 ),
               ],
+            ),
+            const SizedBox(height: 16),
+            if (report == null)
+              const SizedBox(
+                height: 240,
+                child: EmptyState(
+                  icon: Icons.fact_check_outlined,
+                  title: 'No report yet',
+                  message: 'Run the validation checks from the toolbar.',
+                ),
+              )
+            else ...[
+              _SummaryBar(report: report),
+              const SizedBox(height: 16),
+              SizedBox(
+                height: report.issues.isEmpty ? 240 : null,
+                child: report.issues.isEmpty
+                    ? const EmptyState(
+                        icon: Icons.check_circle_outline,
+                        title: 'No issues found',
+                        message:
+                            'Every unit is recognized and every '
+                            'constraint is satisfied.',
+                      )
+                    : _IssueList(issues: report.issues),
+              ),
             ],
-          ),
+          ],
         );
       },
     );
@@ -123,6 +122,8 @@ class _IssueList extends StatelessWidget {
     final sorted = [...issues]
       ..sort((a, b) => order[a.severity]!.compareTo(order[b.severity]!));
     return ListView.separated(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
       itemCount: sorted.length,
       separatorBuilder: (_, _) => const SizedBox(height: 8),
       itemBuilder: (context, index) => _IssueCard(issue: sorted[index]),
